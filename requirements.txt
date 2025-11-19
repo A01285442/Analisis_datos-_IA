@@ -1,4 +1,10 @@
 streamlit==1.51.0
+seaborn
+plotly
+scikit-learn
+openpyxl
 pandas
 numpy
 matplotlib
+openai
+python-dotenv
