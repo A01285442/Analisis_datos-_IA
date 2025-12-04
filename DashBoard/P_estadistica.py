@@ -36,7 +36,7 @@ def _safe_ratio(numerador, denominador):
     return np.where((den == 0) | (pd.isna(den)) | (pd.isna(num)), np.nan, num / den)
 
 @st.cache_data
-def _load_data_from_file(archivo='Base_de_datos_Dimex.csv'):
+def _load_data_from_file(archivo='.\DashBoard\Base_de_datos_Dimex.csv'):
     """Carga archivo Excel/CSV desde ruta (retorna DataFrame)"""
     try:
         if archivo.endswith(('.xlsx', '.xls')):
@@ -117,12 +117,12 @@ def render():
     # -------------------------
     if 'pest_df' not in st.session_state or st.session_state.get('pest_df') is None:
         with st.expander("Opciones de carga (ruta del archivo)", expanded=False):
-            archivo_input = st.text_input("Ruta del archivo (ej: Base_de_datos_Dimex.csv)", value="Base_de_datos_Dimex.csv", key="pest_archivo_input")
+            archivo_input = st.text_input("Ruta del archivo (ej: Base_de_datos_Dimex.csv)", value=".\DashBoard\Base_de_datos_Dimex.csv", key="pest_archivo_input")
             cargar_btn = st.button("Recargar archivo", key="pest_recargar")
 
         try:
             with st.spinner("Cargando datos..."):
-                archivo = archivo_input if archivo_input else "Base_de_datos_Dimex.csv"
+                archivo = archivo_input if archivo_input else ".\DashBoard\Base_de_datos_Dimex.csv"
                 st.session_state['pest_df'] = _load_data_from_file(archivo)
                 st.success(f"Archivo cargado: {archivo}")
         except FileNotFoundError:

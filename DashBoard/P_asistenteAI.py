@@ -402,7 +402,7 @@ Responde de manera clara y profesional.
     # CARGA DE DATOS
     # ======================================================================
     @st.cache_data
-    def load_excel_data(path='Base_Con_NA_Historico.csv'):
+    def load_excel_data(path='.\DashBoard\Base_Con_NA_Historico.csv'):
         try:
             df = None
             if path.endswith(('.xlsx', '.xls')):
@@ -443,7 +443,7 @@ Responde de manera clara y profesional.
         st.session_state["df"] = None
 
     with st.expander("Configuración de datos", expanded=False):
-        archivo = st.text_input("Archivo:", "Base_Con_NA_Historico.csv")
+        archivo = st.text_input("Archivo:", ".\DashBoard\Base_Con_NA_Historico.csv")
         if st.button("Cargar archivo"):
             with st.spinner("Cargando..."):
                 df_loaded = load_excel_data(archivo)

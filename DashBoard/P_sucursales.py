@@ -99,7 +99,7 @@ def render():
 
     if 'df_sucursales_' not in st.session_state:
         with st.spinner("Cargando datos de sucursales..."):
-            df = load_sucursales_data('Base_de_datos_Dimex.csv')
+            df = load_sucursales_data('.\DashBoard\Base_de_datos_Dimex.csv')
             st.session_state['df_sucursales_'] = df
 
     df = st.session_state['df_sucursales_']
