@@ -5,6 +5,6 @@ scikit-learn
 openpyxl
 pandas
 numpy
+google.genai
 matplotlib
-openai
 python-dotenv
