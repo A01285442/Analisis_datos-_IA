@@ -204,6 +204,9 @@ INSTRUCCIONES:
                     f"Máximo=${df[col].max():,.0f}"
                 )
         return "\n".join(summary_parts)
+    def keyword_in_query(keyword, text):
+    # Palabra completa: evita coincidencias dentro de otras palabras
+        return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
 
     def extract_relevant_data(df, query, max_rows=20):
         if df is None or df.empty:
@@ -232,13 +235,13 @@ INSTRUCCIONES:
             'tendencia': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
             'evolución': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
         }
-        
-        def keyword_in_query(keyword, text):
-            return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
-                
+        relevant_cols = set()
         for keyword, cols in keyword_mapping.items():
-            if keyword_in_query(keyword, query_lower):
-                relevant_cols += [c for c in cols if c in df.columns]
+            if keyword in query_lower:    # tu lógica actual
+                for c in cols:
+                    if c in df.columns:
+                        relevant_cols.add(c) 
+        relevant_cols = list(relevant_cols)
 
         # SIEMPRE incluir columnas de identificación
         id_cols = ['Sucursal', 'Vendedor', 'Región', 'Region', 'Nivel_Riesgo']
@@ -517,31 +520,14 @@ Responde de manera clara y profesional.
             df = st.session_state["df"]
             
             # DEBUG: Mostrar columnas disponibles
-            with st.expander("🔍 Debug: Columnas disponibles", expanded=False):
-                st.write("**Columnas en el DataFrame:**")
-                st.write(df.columns.tolist())
-                if 'ICV' in df.columns:
-                    st.success("✅ Columna ICV está presente")
-                    st.write(f"ICV promedio: {df['ICV'].mean():.2f}%")
-                else:
-                    st.warning("⚠️ Columna ICV no encontrada")
             
             df_filtered = detect_intent_and_filter(prompt, df)
             
             # DEBUG: Mostrar columnas después del filtro
-            with st.expander("🔍 Debug: Datos filtrados", expanded=False):
-                st.write("**Columnas después del filtro:**")
-                st.write(df_filtered.columns.tolist())
-                st.write(f"**Registros filtrados:** {len(df_filtered)}")
-                if 'ICV' in df_filtered.columns:
-                    st.success("✅ ICV presente en datos filtrados")
-                    st.dataframe(df_filtered[['Sucursal', 'ICV']].head(5))
             
             context = extract_relevant_data(df_filtered, prompt)
             
             # DEBUG: Mostrar contexto que se envía a Gemini
-            with st.expander("📤 Debug: Contexto enviado a Gemini", expanded=False):
-                st.text_area("Contexto:", context, height=300)
             
             response = generate_response(prompt, context)
 
