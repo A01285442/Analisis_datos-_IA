@@ -69,7 +69,7 @@ def clean_column_name(col_name):
     return col_name.replace('\n', '').replace(' ', '').replace('.', '').replace('%', '').strip()
 
 @st.cache_data
-def load_data(file_path='.\DashBoard\Base_Con_NA_Historico.csv'):
+def load_data(file_path='./DashBoard/Base_Con_NA_Historico.csv'):
     try:
         df = pd.read_csv(file_path, encoding='latin-1')
     except:
