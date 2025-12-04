@@ -6,5 +6,6 @@ openpyxl
 pandas
 numpy
 google.genai
+tabulate
 matplotlib
 python-dotenv
