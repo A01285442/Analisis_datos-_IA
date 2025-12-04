@@ -3,658 +3,552 @@ import pandas as pd
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+import numpy as np
 import os
+import re
+
+# Componentes DIMEX
+from utils.theme import get_theme_colors
+from utils.css_manager import apply_css
+from components.header import create_page_header
+from utils.icons import get_icon
 
 # =============================================================================
-# CONFIGURACIÓN DE PÁGINA
+# RENDER PRINCIPAL DE LA PÁGINA (INTEGRADO AL ROUTER)
 # =============================================================================
-st.set_page_config(
-    page_title="Asistente IA - Gemini", 
-    page_icon="🤖",
-    layout="wide"
-)
+def render():
 
-# =============================================================================
-# SISTEMA DE TEMAS
-# =============================================================================
-
-def get_theme_colors():
-    """Retorna colores según el tema activo (Verde/Oscuro y Verde/Claro)"""
-    if 'theme' not in st.session_state:
-        st.session_state['theme'] = 'dark'
-    
-    if st.session_state['theme'] == 'dark':
-        return {
-            'bg_primary': '#0f1116',
-            'bg_secondary': '#1a1d24',
-            'bg_card': '#1e293b',
-            'text_primary': '#e2e8f0',
-            'text_secondary': '#cbd5e0',
-            'text_muted': '#94a3b8',
-            'border': '#2d3748',
-            'accent': '#63AB32',
-            'accent_secondary': '#2FEB00',
-            'success': '#22c55e',
-            'warning': '#eab308',
-            'error': '#ef4444',
-            'grid': '#334155'
-        }
-    else:
-        return {
-            'bg_primary': '#ffffff',
-            'bg_secondary': '#f8fafc',
-            'bg_card': '#ffffff',
-            'text_primary': '#1e293b',
-            'text_secondary': '#475569',
-            'text_muted': '#64748b',
-            'border': '#e2e8f0',
-            'accent': '#2FEB00',
-            'accent_secondary': '#2FEB00',
-            'success': '#16a34a',
-            'warning': '#ca8a04',
-            'error': '#dc2626',
-            'grid': '#e2e8f0'
-        }
-
-def apply_custom_css():
-    """Aplica CSS dinámico según el tema"""
-    colors = get_theme_colors()
-    
-    st.markdown(
-        f"""
-        <style>
-            [data-testid="stAppViewContainer"] {{
-                background-color: {colors['bg_primary']};
-            }}
-        </style>
-        """,
-        unsafe_allow_html=True
+    # --------------------------- CONFIG DE PÁGINA -----------------------------
+    st.set_page_config(
+        page_title="Asistente IA - Gemini", 
+        page_icon=get_icon("chatbot_gris"),
+        layout="wide"
     )
-    
-    css = f"""
-    <style>
-    /* =============== GLOBAL =============== */
-    .main, .block-container {{
-        background-color: {colors['bg_primary']} !important;
-        color: {colors['text_primary']} !important;
-    }}
-    
-    h1, h2, h3, h4, h5, h6, label, p, span {{
-        color: {colors['text_primary']} !important;
-    }}
-    
-    /* =============== SIDEBAR (VERDE) =============== */
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, {colors['accent']} 0%, {colors['accent_secondary']} 100%) !important;
-    }}
-    
-    [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {{
-        color: white !important;
-    }}
 
-    .dimex-sidebar-card * {{
-        color: {colors['text_primary']} !important;
-    }}
-    
-    /* =============== TITLES =============== */
-    .section-title {{
-        color: {colors['text_primary']} !important;
-        font-size: 1.6rem !important;
-        font-weight: 700 !important;
-        padding: 10px 0;
-        border-bottom: 3px solid {colors['accent']};
-        margin-bottom: 1.5rem;
-    }}
-    
-    /* =============== CARDS =============== */
-    .metric-card {{
-        background: {colors['bg_card']} !important;
-        color: {colors['text_primary']} !important;
-        border-radius: 12px !important;
-        padding: 1rem !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        border-left: 5px solid {colors['accent']} !important;
-        transition: transform 0.2s;
-    }}
-    
-    .metric-card:hover {{
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    }}
-    
-    .metric-label {{
-        color: {colors['text_muted']} !important;
-        font-size: 0.85rem !important;
-    }}
-    
-    .metric-value {{
-        color: {colors['text_primary']} !important;
-        font-size: 1.5rem !important;
-        font-weight: bold !important;
-    }}
-    
-    /* =============== ALERTS =============== */
-    .alert-box {{
-        background-color: {colors['bg_card']} !important;
-        border: 1px solid {colors['border']} !important;
-        border-radius: 10px !important;
-        padding: 1rem !important;
-        color: {colors['text_primary']} !important;
-    }}
-    
-    .alert-info {{ border-left: 5px solid #4299e1 !important; }}
-    .alert-success {{ border-left: 5px solid {colors['success']} !important; }}
-    .alert-warning {{ border-left: 5px solid {colors['warning']} !important; }}
-    
-    /* =============== CHAT MESSAGES =============== */
-    .stChatMessage {{
-        background-color: {colors['bg_card']} !important;
-        border: 1px solid {colors['border']} !important;
-        border-radius: 10px !important;
-        color: {colors['text_primary']} !important;
-    }}
-    
-    /* Forzar color de texto dentro de mensajes */
-    .stChatMessage p, .stChatMessage span, .stChatMessage div {{
-        color: {colors['text_primary']} !important;
-    }}
-    
-    /* =============== CHAT INPUT =============== */
-    .stChatInputContainer {{
-        background-color: {colors['bg_secondary']} !important;
-        border: 1px solid {colors['border']} !important;
-        border-radius: 10px !important;
-    }}
-    
-    .stChatInput textarea {{
-        background-color: {colors['bg_secondary']} !important;
-        color: {colors['text_primary']} !important;
-        border: 1px solid {colors['border']} !important;
-    }}
-    
-    /* Placeholder del chat input */
-    .stChatInput textarea::placeholder {{
-        color: {colors['text_muted']} !important;
-        opacity: 0.7;
-    }}
-    
-    /* Forzar color en el área de escritura */
-    [data-testid="stChatInput"] textarea {{
-        background-color: {colors['bg_secondary']} !important;
-        color: {colors['text_primary']} !important;
-    }}
-    
-    [data-testid="stChatInput"] {{
-        background-color: {colors['bg_secondary']} !important;
-    }}
-    
-    /* =============== FILE UPLOADER =============== */
-    .stFileUploader {{
-        background-color: {colors['bg_card']} !important;
-        border: 1px dashed {colors['border']} !important;
-        border-radius: 8px !important;
-    }}
-    
-    .stFileUploader label {{
-        color: {colors['text_primary']} !important;
-    }}
-    
-    /* =============== SELECTBOX =============== */
-    .stSelectbox div {{
-        background-color: {colors['bg_secondary']} !important;
-        color: {colors['text_primary']} !important;
-        border: 1px solid {colors['border']} !important;
-    }}
-    
-    /* =============== BUTTONS =============== */
-    .stButton > button {{
-        background: linear-gradient(135deg, {colors['accent']} 0%, {colors['accent_secondary']} 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 0.5rem 1.5rem !important;
-        font-weight: 600 !important;
-        transition: all 0.3s !important;
-    }}
-    
-    .stButton > button:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px {colors['accent']}40 !important;
-    }}
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
+    HAS_RERUN = hasattr(st, "rerun")
 
-# =============================================================================
-# SIDEBAR UNIFICADO
-# =============================================================================
+    # -------------------------- INICIALIZAR GEMINI ---------------------------
+    load_dotenv()
+    api_key = os.getenv("GEMINI_API_KEY")
 
-def create_dimex_sidebar():
-    """Sidebar estándar de DIMEX"""
-    colors = get_theme_colors()
-    
-    with st.sidebar:
-        # Logo
-        st.markdown(f"""
-        <div class="dimex-sidebar-card" style="text-align: center; padding: 1rem; 
-             background: {colors['bg_card']}; 
-             border-radius: 10px; margin-bottom: 1rem;">
-            <h1 style="color: {colors['accent']} !important; margin: 0; font-size: 1.8rem;">DIMEX</h1>
-            <p style="color: {colors['text_muted']} !important; margin: 0.2rem 0 0 0; font-size: 0.8rem;">Sistema Predictivo</p>
-            <hr style="border: none; border-top: 1px solid {colors['border']}; margin: 0.2rem 0;">
-            <p style="color: {colors['text_secondary']} !important; font-size: 0.75rem; margin: 0;">Asistente IA</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Toggle de tema
-        st.markdown("### ⚙️ Configuración")
-        theme_option = st.radio(
-            "Tema de color:",
-            options=['Oscuro', 'Claro'],
-            index=0 if st.session_state.get('theme', 'dark') == 'dark' else 1,
-            key='theme_selector'
-        )
-        
-        new_theme = 'dark' if theme_option == 'Oscuro' else 'light'
-        if st.session_state.get('theme') != new_theme:
-            st.session_state['theme'] = new_theme
-            st.rerun()
-        
-        st.markdown("---")
-        
-        # Navegación
-        st.markdown("### 📚 Navegación")
-        st.markdown(f"""
-        <div class="dimex-sidebar-card" style="background: {colors['bg_card']};
-             padding: 1rem; border-radius: 8px;">
-            <ul style="margin: 0; padding-left: 1.5rem; line-height: 2;">
-                <li><strong style="color: {colors['text_primary']} !important;">Home</strong></li>
-                <li><strong style="color: {colors['text_primary']} !important;">Dashboard</strong></li>
-                <li><strong style="color: {colors['text_primary']} !important;">Estadísticas</strong></li>
-                <li><strong style="color: {colors['accent']} !important;">→ Asistente IA</strong></li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # Información de datos cargados
-        if 'df' in st.session_state and st.session_state['df'] is not None:
-            df = st.session_state['df']
-            st.markdown("### 📊 Datos Cargados")
-            st.markdown(f"""
-            <div class="dimex-sidebar-card" style="background: {colors['bg_card']}; 
-                 padding: 1rem; border-radius: 8px;">
-                <p style="margin: 0.5rem 0; color: {colors['text_secondary']} !important;">
-                    <strong>Registros:</strong> 
-                    <span style="color: {colors['text_primary']} !important;">{df.shape[0]:,}</span>
-                </p>
-                <p style="margin: 0.5rem 0; color: {colors['text_secondary']} !important;">
-                    <strong>Columnas:</strong> 
-                    <span style="color: {colors['text_primary']} !important;">{df.shape[1]}</span>
-                </p>
-                <p style="margin: 0.5rem 0; color: {colors['text_secondary']} !important;">
-                    <strong>Contexto:</strong> 
-                    <span style="color: {colors['success']} !important;">✓ Activo</span>
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("---")
-        
-        # Recursos
-        st.markdown("### 📚 Recursos")
-        st.markdown(f"""
-        <div class="dimex-sidebar-card" style="background: {colors['bg_card']};
-             padding: 1rem; border-radius: 8px;">
-            <ul style="margin: 0; padding-left: 1.5rem; line-height: 2;">
-                <li><a href="#" style="color: {colors['accent']} !important; text-decoration: none;">📖 Documentación</a></li>
-                <li><a href="#" style="color: {colors['accent']} !important; text-decoration: none;">💬 Soporte</a></li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-# =============================================================================
-# HEADER
-# =============================================================================
-
-def create_page_header(title, subtitle):
-    """Header consistente"""
-    colors = get_theme_colors()
-    st.markdown(f"""
-        <div style="
-            background: linear-gradient(120deg, {colors['accent']} 70%, {colors['accent_secondary']} 100%);
-            padding: 1.5rem;
-            border-radius: 10px;
-            color: white;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        ">
-            <h1 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: white !important;">{title}</h1>
-            <p style="margin: 0.25rem 0 0 0; color: #f0f0f0;">{subtitle}</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-# =============================================================================
-# INICIALIZACIÓN DE GEMINI
-# =============================================================================
-
-load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-
-try:
-    if not api_key:
-        st.error("Error: La clave API (GEMINI_API_KEY) no fue encontrada en las variables de entorno.")
+    try:
+        if not api_key:
+            st.error("Error: No se encontró GEMINI_API_KEY.")
+            st.stop()
+        client = genai.Client(api_key=api_key) 
+    except Exception as e:
+        st.error(f"Error al inicializar Gemini: {e}")
         st.stop()
-    client = genai.Client(api_key=api_key) 
-except Exception as e:
-    st.error(f"Error al inicializar el cliente Gemini: {e}")
-    st.stop()
 
-# =============================================================================
-# ROLES DEL ASISTENTE
-# =============================================================================
+    # ------------------------- ROLES DEL ASISTENTE ---------------------------
+    ROLES_DEFINITIONS = """
+Eres un asistente inteligente de DIMEX que adopta diferentes roles según la consulta:
 
-ROLES = {
-    "Riesgo": "Eres un analista de riesgos experto. Tu tarea es resumir datos de portafolios y destacar cualquier anomalía o alerta de cambio significativa. Responde de forma concisa y profesional.",
-    "Cobranza": "Eres un asesor de cobranza. Tu objetivo es sugerir acciones de cobro y priorizar cuentas basándote en la información proporcionada. Usa un tono motivacional y directo.",
-    "Servicio": "Eres un especialista de servicio al cliente. Responde a consultas frecuentes sobre productos Dimex de manera clara, amable y precisa. Si no conoces la respuesta, indica que la buscarás.",
-    "Fraude": "Eres un experto en prevención de fraude. Identifica patrones sospechosos en los datos y valida la información dinámicamente. Pide más detalles si es necesario para la validación.",
-}
+[Rol: Riesgo] → Análisis de cartera, deterioro, IMOR, alertas, tendencias.  
+[Rol: Cobranza] → Estrategias, priorización, seguimientos.  
+[Rol: Servicio] → Procesos, productos, información general.  
+[Rol: Fraude] → Anomalías, validación sospechosa, patrones extraños.
 
-# =============================================================================
-# CARGA DE DATOS (IGUAL QUE ESTADÍSTICAS)
-# =============================================================================
+GLOSARIO DE MÉTRICAS FINANCIERAS:
+- ICV (Índice de Cartera Vencida): Porcentaje de saldo vencido respecto al saldo total. Se calcula como (Saldo_Vencido / Saldo_Actual) * 100. Un ICV alto indica mayor riesgo.
+- IMOR (Índice de Morosidad): Similar al ICV, mide el porcentaje de cartera en mora. Es sinónimo de ICV en este contexto.
+- ICV_Crecimiento_6M: Porcentaje de crecimiento del ICV en los últimos 6 meses. Se calcula como ((ICV_Actual - ICV_T06) / ICV_T06) * 100.
+  * Valores positivos: El ICV está AUMENTANDO (⚠️ deterioro, más riesgo)
+  * Valores negativos: El ICV está DISMINUYENDO (✅ mejora, menos riesgo)
+  * Ejemplo: +25% significa que el ICV creció 25% en 6 meses (señal de alerta)
+- FPD (First Payment Default): Porcentaje de créditos que caen en mora en su primer pago. Indicador temprano de calidad de originación.
+- Ratio 30-89: Porcentaje de cartera con mora entre 30 y 89 días. Zona crítica antes de deterioro severo.
+- Nivel_Riesgo: Clasificación automática basada en ICV, FPD y Ratio 30-89:
+  * Riesgo Alto: 3 indicadores por encima de umbrales (ICV>5%, Ratio 30-89>3%, FPD>6%)
+  * Riesgo Medio: 2 indicadores por encima de umbrales
+  * Saludable: 0-1 indicadores por encima de umbrales
 
-@st.cache_data
-def load_excel_data(file_path='Base_Con_NA.xlsx'):
-    """Carga datos desde Excel/CSV con manejo de errores (igual que estadísticas)"""
-    try:
-        if file_path.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_path)
+INSTRUCCIONES:
+1. Detecta automáticamente el rol apropiado.
+2. Indica el rol al inicio de la respuesta.
+3. Usa SIEMPRE los datos proporcionados en el CONTEXTO DE DATOS.
+4. Si una métrica aparece en los datos (como ICV, IMOR, FPD, ICV_Crecimiento_6M), úsala directamente.
+5. Cuando hables de crecimiento del ICV, aclara si es positivo (deterioro) o negativo (mejora).
+6. Explica de forma profesional y concisa.
+7. Si realmente faltan datos críticos, solicita detalles específicos.
+"""
+
+    # ======================================================================
+    # FUNCIONES DE EXTRACCIÓN / FILTRO Y ENRIQUECIMIENTO DE DATOS
+    # ======================================================================
+
+    def enrich_dataframe(df):
+        """Agrega columnas calculadas de riesgo al DataFrame"""
+        if df is None or df.empty:
             return df
-        elif file_path.endswith('.csv'):
-            try:
-                return pd.read_csv(file_path, encoding='utf-8')
-            except UnicodeDecodeError:
-                try:
-                    return pd.read_csv(file_path, encoding='latin-1')
-                except:
-                    return pd.read_csv(file_path, encoding='ISO-8859-1')
-        else:
-            raise ValueError("Formato no soportado. Use .xlsx, .xls o .csv")
-    except FileNotFoundError:
-        st.error(f"⚠️ Archivo no encontrado: {file_path}")
-        return None
-    except Exception as e:
-        st.error(f"⚠️ Error al cargar: {e}")
-        return None
-
-def prepare_knowledge_context(df):
-    """Prepara el contexto desde el DataFrame completo"""
-    if df is not None:
-        # Usar las primeras 10 filas y todas las columnas relevantes
-        df_limited = df.head(10)
-        context_string = f"DATOS DE CONOCIMIENTO:\n\n{df_limited.to_markdown(index=False)}"
-        return context_string
-    return ""
-
-def generate_response(role_key, user_prompt, context_data):
-    """Genera respuesta con Gemini"""
-    system_instruction = ROLES.get(role_key, ROLES["Servicio"])
-    full_prompt = f"{context_data}\n\n[INSTRUCCIÓN: {role_key}]\n\nPregunta del Usuario: {user_prompt}"
-
-    try:
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=full_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction
+        
+        # Detectar nombres de columnas originales
+        col_saldo_actual = next((c for c in df.columns if c in ['SaldoInsolutoActual', 'Saldo_Actual', 'Saldo Insoluto Actual']), None)
+        col_saldo_vencido = next((c for c in df.columns if c in ['SaldoInsolutoVencidoActual', 'Saldo_Vencido', 'Saldo Insoluto Vencido']), None)
+        
+        # Calcular ICV (Índice de Cartera Vencida)
+        if col_saldo_actual and col_saldo_vencido:
+            df['ICV'] = np.where(
+                df[col_saldo_actual] > 0,
+                (df[col_saldo_vencido] / df[col_saldo_actual]) * 100,
+                0.0
             )
-        )
-        return response.text
-    except Exception as e:
-        return f"❌ ERROR AL LLAMAR A LA API: {e}"
-
-# =============================================================================
-# APLICAR TEMA Y SIDEBAR
-# =============================================================================
-
-apply_custom_css()
-create_dimex_sidebar()
-create_page_header(
-    "🤖 Asistente Inteligente con Gemini",
-    "Consulta especializada por área con IA generativa"
-)
-
-colors = get_theme_colors()
-
-# =============================================================================
-# CARGAR DATOS AL INICIO (IGUAL QUE ESTADÍSTICAS)
-# =============================================================================
-
-# Cargar datos en session_state si no existe
-if 'df' not in st.session_state or st.session_state['df'] is None:
-    with st.expander("⚙️ Opciones de carga (ruta del archivo)", expanded=False):
-        archivo_input = st.text_input(
-            "Ruta del archivo (ej: Base_Con_NA.xlsx)", 
-            value="Base_Con_NA.xlsx",
-            key="archivo_path"
-        )
-        cargar_btn = st.button("🔁 Cargar/Recargar archivo", key="recargar_datos")
-
-    # Cargar automáticamente o con botón
-    if cargar_btn or ('df' not in st.session_state):
-        with st.spinner("Cargando datos..."):
-            archivo = archivo_input if archivo_input else "Base_Con_NA.xlsx"
-            df_loaded = load_excel_data(archivo)
-            if df_loaded is not None:
-                st.session_state['df'] = df_loaded
-                st.session_state['knowledge_context'] = prepare_knowledge_context(df_loaded)
-                st.success(f"✅ Archivo cargado: {archivo}")
-            else:
-                st.session_state['df'] = None
-                st.session_state['knowledge_context'] = ""
-else:
-    # Ya está cargado, asegurar contexto
-    if 'knowledge_context' not in st.session_state or not st.session_state['knowledge_context']:
-        st.session_state['knowledge_context'] = prepare_knowledge_context(st.session_state['df'])
-
-st.markdown("---")
-
-# =============================================================================
-# CONFIGURACIÓN DEL ASISTENTE
-# =============================================================================
-
-st.markdown('<div class="section-title">⚙️ Configuración del Asistente</div>', unsafe_allow_html=True)
-
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.markdown(f"""
-    <div class="alert-box alert-info">
-        <h4 style="margin-top:0; color:{colors['text_primary']};">ℹ️ Instrucciones</h4>
-        <ol style="margin-bottom:0; color:{colors['text_secondary']};">
-            <li>Selecciona un <strong>área especializada</strong> (Riesgo, Cobranza, Servicio o Fraude)</li>
-            <li>Opcionalmente, sube un archivo Excel para agregar contexto</li>
-            <li>Escribe tu consulta en el chat</li>
-        </ol>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    # Selector de Rol
-    selected_role = st.selectbox(
-        "📋 Selecciona el Área:",
-        list(ROLES.keys()),
-        key="role_selector"
-    )
-    
-    st.markdown(f"""
-    <div class="metric-card" style="margin-top:1rem;">
-        <div class="metric-label">Rol Activo</div>
-        <div class="metric-value" style="font-size:1.2rem;">{selected_role}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Información adicional sobre el archivo cargado
-if st.session_state.get('df') is not None:
-    with st.expander("📊 Información del archivo cargado", expanded=False):
-        df = st.session_state['df']
-        col1, col2, col3 = st.columns(3)
+        elif 'ICV_Calc' in df.columns:
+            df['ICV'] = df['ICV_Calc']
         
-        with col1:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">Total Registros</div>
-                <div class="metric-value">{df.shape[0]:,}</div>
-            </div>
-            """, unsafe_allow_html=True)
+        # Calcular ICV de hace 6 meses (T06) y el % de crecimiento
+        col_saldo_t06 = next((c for c in df.columns if 'SaldoInsolutoT06' in c or 'SaldoInsolutoT6' in c), None)
+        col_vencido_t06 = next((c for c in df.columns if 'SaldoInsolutoVencidoT06' in c or 'SaldoInsolutoVencidoT6' in c), None)
         
-        with col2:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">Columnas</div>
-                <div class="metric-value">{df.shape[1]}</div>
-            </div>
-            """, unsafe_allow_html=True)
+        if col_saldo_t06 and col_vencido_t06:
+            # Calcular ICV de hace 6 meses
+            df['ICV_T06'] = np.where(
+                df[col_saldo_t06] > 0,
+                (df[col_vencido_t06] / df[col_saldo_t06]) * 100,
+                0.0
+            )
+            
+            # Calcular % de Crecimiento del ICV (últimos 6 meses)
+            # Fórmula: ((ICV_Actual - ICV_T06) / ICV_T06) * 100
+            df['ICV_Crecimiento_6M'] = np.where(
+                df['ICV_T06'] > 0,
+                ((df['ICV'] - df['ICV_T06']) / df['ICV_T06']) * 100,
+                0.0
+            )
+        else:
+            # Si no hay datos T06, intentar calcular con las columnas disponibles
+            # Buscar cualquier columna T06
+            saldo_t06_alt = next((c for c in df.columns if 'T06' in c and 'Vencido' not in c), None)
+            vencido_t06_alt = next((c for c in df.columns if 'T06' in c and 'Vencido' in c), None)
+            
+            if saldo_t06_alt and vencido_t06_alt:
+                df['ICV_T06'] = np.where(
+                    df[saldo_t06_alt] > 0,
+                    (df[vencido_t06_alt] / df[saldo_t06_alt]) * 100,
+                    0.0
+                )
+                df['ICV_Crecimiento_6M'] = np.where(
+                    df['ICV_T06'] > 0,
+                    ((df['ICV'] - df['ICV_T06']) / df['ICV_T06']) * 100,
+                    0.0
+                )
         
-        with col3:
-            st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">Contexto</div>
-                <div class="metric-value">Activo</div>
-                <div style="font-size:0.85rem; color:{colors['success']}; margin-top:6px;">✓ 10 filas disponibles</div>
-            </div>
-            """, unsafe_allow_html=True)
+        # Calcular Ratio 30-89
+        if 'Ratio_30_89_Calc' not in df.columns:
+            col_3089 = next((c for c in df.columns if '3089' in c.lower()), None)
+            if col_3089 and col_saldo_actual:
+                df['Ratio_30_89_Calc'] = np.where(
+                    df[col_saldo_actual] > 0,
+                    (df[col_3089] / df[col_saldo_actual]) * 100,
+                    0.0
+                )
         
-        st.markdown("**Vista previa de datos:**")
-        st.dataframe(df.head(5), use_container_width=True, height=200)
+        # Calcular FPD
+        if 'FPD_Calc' not in df.columns:
+            col_fpd = next((c for c in df.columns if 'fpd' in c.lower() and 'actual' in c.lower()), None)
+            if col_fpd:
+                df['FPD_Calc'] = df[col_fpd] if df[col_fpd].mean() >= 1 else df[col_fpd] * 100
+        
+        # Clasificar Nivel de Riesgo
+        def clasificar_riesgo(row):
+            icv_val = row.get('ICV', 0)
+            ratio_30_89 = row.get('Ratio_30_89_Calc', 0)
+            fpd_val = row.get('FPD_Calc', 0)
+            
+            score = sum([
+                icv_val > 5.0,
+                ratio_30_89 > 3.0,
+                fpd_val > 6.0
+            ])
+            
+            if score == 3:
+                return "Riesgo Alto"
+            elif score == 2:
+                return "Riesgo Medio"
+            return "Saludable"
+        
+        df['Nivel_Riesgo'] = df.apply(clasificar_riesgo, axis=1)
+        return df
 
-st.markdown("---")
+    def generate_data_summary(df):
+        summary_parts = []
+        summary_parts.append(f"Total de registros: {len(df)}")
 
-# Opción para cargar archivo adicional (opcional)
-with st.expander("📤 Cargar archivo adicional (opcional)", expanded=False):
-    st.markdown(f"""
-    <div class="alert-box alert-info">
-        <p style="margin:0; color:{colors['text_primary']};">
-            Si deseas agregar contexto adicional, puedes subir otro archivo Excel aquí. 
-            El sistema ya tiene cargado el archivo principal automáticamente.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    uploaded_file = st.file_uploader(
-        "Archivo Excel adicional (.xlsx):",
-        type=["xlsx"],
-        help="Este archivo complementará el contexto existente",
-        key="archivo_adicional"
-    )
-    
-    if uploaded_file:
+        # Agregar información de nivel de riesgo si existe
+        if 'Nivel_Riesgo' in df.columns:
+            risk_counts = df['Nivel_Riesgo'].value_counts()
+            summary_parts.append("\nDistribución de Riesgo:")
+            for risk, count in risk_counts.items():
+                summary_parts.append(f"  - {risk}: {count} sucursales ({count/len(df)*100:.1f}%)")
+
+        # Agregar promedios de métricas clave si existen
+        if 'ICV' in df.columns:
+            icv_avg = df['ICV'].mean() * 100
+            summary_parts.append(f"\nICV Promedio: {icv_avg:.2f}%")
+        if 'ICV_Calc' in df.columns:
+            icv_calc_avg = df['ICV_Calc'].mean()
+            summary_parts.append(f"\nICV Promedio: {icv_calc_avg:.2f}%")
+        if 'FPD_Calc' in df.columns:
+            fpd_avg = df['FPD_Calc'].mean()
+            summary_parts.append(f"FPD Promedio: {fpd_avg:.2f}%")
+        if 'Ratio_30_89_Calc' in df.columns:
+            ratio_avg = df['Ratio_30_89_Calc'].mean()
+            summary_parts.append(f"Ratio 30-89 Promedio: {ratio_avg:.2f}%")
+
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        for col in numeric_cols:
+            if any(k in col.lower() for k in ["saldo", "capital"]):
+                summary_parts.append(
+                    f"\n{col}: Total=${df[col].sum():,.0f}, "
+                    f"Promedio=${df[col].mean():,.0f}, "
+                    f"Máximo=${df[col].max():,.0f}"
+                )
+        return "\n".join(summary_parts)
+
+    def extract_relevant_data(df, query, max_rows=20):
+        if df is None or df.empty:
+            return "No hay datos disponibles."
+
+        query_lower = query.lower()
+        relevant_cols = []
+
+        # Detectar nombres de columnas originales disponibles
+        col_saldo_actual = next((c for c in df.columns if c in ['SaldoInsolutoActual', 'Saldo_Actual', 'Saldo Insoluto Actual']), None)
+        col_saldo_vencido = next((c for c in df.columns if c in ['SaldoInsolutoVencidoActual', 'Saldo_Vencido', 'Saldo Insoluto Vencido']), None)
+
+        keyword_mapping = {
+            'saldo': ['Saldo Insoluto Actual', 'SaldoInsolutoActual', 'Saldo_Actual'],
+            'vencido': ['Saldo Insoluto Vencido', 'SaldoInsolutoVencidoActual', 'Saldo_Vencido'],
+            'sucursal': ['Sucursal', 'Region', 'Región'],
+            'vendedor': ['Vendedor', 'Nombre Vendedor'],
+            'capital': ['Capital Dispersado', 'CapitalDispersadoActual','CapitalLiquidadoActual'],
+            'castigo': ['Castigos', 'CastigosActual'],
+            'fpd': ['%FPD', 'FPD', 'FPDActual', 'FPD_Calc'],
+            'imor': ['IMOR', 'Porcentaje_Vencido', 'ICV', 'ICV_Calc', 'SaldoInsolutoVencidoActual', 'SaldoInsolutoActual', 'ICV_Crecimiento_6M'],
+            'icv': ['ICV', 'ICV_Calc', 'SaldoInsolutoVencidoActual', 'SaldoInsolutoActual', 'ICV_Crecimiento_6M', 'ICV_T06'],
+            '3089': ['3089', 'Saldo30-89', 'Ratio_30_89_Calc'],
+            'riesgo': ['Nivel_Riesgo'],
+            'crecimiento': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
+            'tendencia': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
+            'evolución': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
+        }
+        
+        def keyword_in_query(keyword, text):
+            return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
+                
+        for keyword, cols in keyword_mapping.items():
+            if keyword_in_query(keyword, query_lower):
+                relevant_cols += [c for c in cols if c in df.columns]
+
+        # SIEMPRE incluir columnas de identificación
+        id_cols = ['Sucursal', 'Vendedor', 'Región', 'Region', 'Nivel_Riesgo']
+        relevant_cols += [c for c in id_cols if c in df.columns and c not in relevant_cols]
+
+        # Para consultas de ICV/IMOR, FORZAR inclusión de TODAS las columnas necesarias
+        if any(w in query_lower for w in ['icv', 'imor', 'morosidad', 'cartera vencida', 'crecimiento', 'tendencia', 'evolución']):
+            # Lista EXPLÍCITA de columnas que DEBEN estar si existen
+            required_for_icv = ['ICV', 'ICV_Calc', 'ICV_Crecimiento_6M', 'ICV_T06',
+                                'SaldoInsolutoVencidoActual', 'SaldoInsolutoActual', 
+                                'Saldo_Vencido', 'Saldo_Actual', 'Nivel_Riesgo', 'Sucursal', 'Region', 'Región']
+            for col in required_for_icv:
+                if col in df.columns and col not in relevant_cols:
+                    relevant_cols.append(col)
+
+        # Si no hay columnas relevantes, usar las importantes
+        if not relevant_cols:
+            important = ['Sucursal', 'Saldo Insoluto Actual', 'SaldoInsolutoActual', 'Saldo_Actual', 'Vendedor', 'Nivel_Riesgo']
+            relevant_cols = [c for c in important if c in df.columns]
+
         try:
-            df_extra = pd.read_excel(uploaded_file)
-            extra_context = f"\n\nDATOS ADICIONALES:\n\n{df_extra.head(5).to_markdown(index=False)}"
-            st.session_state['knowledge_context'] += extra_context
-            st.success(f"✅ Archivo adicional cargado: {uploaded_file.name}")
+            df_filtered = df[relevant_cols].copy()
         except Exception as e:
-            st.error(f"⚠️ Error: {e}")
+            # Si falla, incluir todas las columnas
+            st.warning(f"Error al filtrar columnas: {e}. Usando todas las columnas.")
+            df_filtered = df.copy()
 
-st.markdown("---")
+        # Ordenar por la métrica relevante si existe
+        if 'ICV' in df_filtered.columns and any(w in query_lower for w in ['icv', 'imor']):
+            df_filtered = df_filtered.sort_values('ICV', ascending=False)
+        elif 'ICV_Calc' in df_filtered.columns and any(w in query_lower for w in ['icv', 'imor']):
+            df_filtered = df_filtered.sort_values('ICV_Calc', ascending=False)
+        else:
+            if col_saldo_actual and col_saldo_actual in df_filtered.columns:
+                df_filtered = df_filtered.sort_values(col_saldo_actual, ascending=False)
 
-# =============================================================================
-# CHAT INTERFACE
-# =============================================================================
+        df_filtered = df_filtered.head(max_rows)
+        summary = generate_data_summary(df_filtered)
 
-st.markdown('<div class="section-title">💬 Conversación</div>', unsafe_allow_html=True)
+        # Agregar información sobre columnas calculadas disponibles
+        available_metrics = []
+        if 'ICV' in df.columns:
+            available_metrics.append("ICV (Índice de Cartera Vencida) - COLUMNA PRESENTE")
+        if 'ICV_Calc' in df.columns:
+            available_metrics.append("ICV_Calc - COLUMNA PRESENTE")
+        if 'ICV_Crecimiento_6M' in df.columns:
+            available_metrics.append("ICV_Crecimiento_6M (% Crecimiento ICV últimos 6 meses) - COLUMNA PRESENTE")
+        if 'FPD_Calc' in df.columns:
+            available_metrics.append("FPD (First Payment Default)")
+        if 'Ratio_30_89_Calc' in df.columns:
+            available_metrics.append("Ratio 30-89 días")
+        if 'Nivel_Riesgo' in df.columns:
+            available_metrics.append("Nivel de Riesgo")
 
-# Inicializar historial
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [
-        {"role": "assistant", "content": f"¡Hola! Soy tu asistente de **{selected_role}**. ¿En qué puedo ayudarte hoy?"}
-    ]
+        metrics_info = f"\n\nMÉTRICAS DISPONIBLES EN LOS DATOS: {', '.join(available_metrics)}" if available_metrics else ""
 
-# Mostrar mensajes
-for message in st.session_state["messages"]:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        # Lista explícita de columnas presentes
+        columns_present = f"\n\nCOLUMNAS PRESENTES EN LA TABLA: {', '.join(df_filtered.columns.tolist())}"
 
-# Input del usuario
-if prompt := st.chat_input("💭 Escribe tu consulta aquí..."):
-    # Agregar mensaje del usuario
-    st.session_state["messages"].append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+        return f"""
+RESUMEN ESTADÍSTICO:
+{summary}{metrics_info}{columns_present}
 
-    # Generar respuesta
-    with st.spinner(f"🤔 El asistente de {selected_role} está procesando..."):
-        response_text = generate_response(
-            selected_role, 
-            prompt, 
-            st.session_state.get("knowledge_context", "")
-        )
-    
-    # Mostrar respuesta
-    with st.chat_message("assistant"):
-        st.markdown(response_text)
-    
-    # Agregar respuesta al historial
-    st.session_state["messages"].append({"role": "assistant", "content": response_text})
+DATOS COMPLETOS (Top {len(df_filtered)} ordenados por relevancia):
+{df_filtered.to_markdown(index=False, floatfmt=".4f")}
 
-# =============================================================================
-# INFORMACIÓN ADICIONAL
-# =============================================================================
+⚠️ INSTRUCCIÓN CRÍTICA: La tabla anterior contiene TODAS las columnas necesarias.
+- Si ves la columna "ICV", úsala DIRECTAMENTE para reportar el Índice de Cartera Vencida.
+- Si ves "SaldoInsolutoVencidoActual" y "SaldoInsolutoActual", puedes calcular ICV = (Vencido/Actual)*100.
+- NO digas que el ICV no está disponible si la columna ICV o los datos para calcularlo están en la tabla.
+- Analiza TODAS las columnas mostradas antes de responder.
+"""
 
-st.markdown("---")
+    def detect_intent_and_filter(query, df):
+        q = query.lower()
 
-col1, col2, col3, col4 = st.columns(4)
+        # Detectar nombres de columnas originales
+        col_saldo_actual = next((c for c in df.columns if c in ['SaldoInsolutoActual', 'Saldo_Actual', 'Saldo Insoluto Actual']), None)
+        col_saldo_vencido = next((c for c in df.columns if c in ['SaldoInsolutoVencidoActual', 'Saldo_Vencido', 'Saldo Insoluto Vencido']), None)
 
-with col1:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Roles Disponibles</div>
-        <div class="metric-value">4</div>
-        <div style="font-size:0.85rem; color:{colors['success']}; margin-top:6px;">✓ Especializados</div>
-    </div>
-    """, unsafe_allow_html=True)
+        # Detectar consultas sobre ICV/IMOR específicamente
+        if any(w in q for w in ['icv', 'imor', 'índice de cartera vencida', 'morosidad']):
+            # Asegurar que existe la columna ICV
+            if 'ICV' not in df.columns and col_saldo_vencido and col_saldo_actual:
+                df = df.copy()
+                df['ICV'] = np.where(
+                    df[col_saldo_actual] > 0,
+                    (df[col_saldo_vencido] / df[col_saldo_actual]) * 100,
+                    0
+                )
+            
+            if 'ICV' in df.columns:
+                if any(w in q for w in ['mayor', 'alto', 'más', 'peor', 'top']):
+                    return df.nlargest(15, 'ICV')
+                elif any(w in q for w in ['menor', 'bajo', 'mejor']):
+                    return df.nsmallest(15, 'ICV')
+                else:
+                    return df.nlargest(15, 'ICV')  # Por defecto muestra los mayores
+            elif 'ICV_Calc' in df.columns:
+                if any(w in q for w in ['mayor', 'alto', 'más', 'peor', 'top']):
+                    return df.nlargest(15, 'ICV_Calc')
+                elif any(w in q for w in ['menor', 'bajo', 'mejor']):
+                    return df.nsmallest(15, 'ICV_Calc')
+                else:
+                    return df.nlargest(15, 'ICV_Calc')
 
-with col2:
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Modelo IA</div>
-        <div class="metric-value" style="font-size:1.1rem;">Gemini 2.5</div>
-        <div style="font-size:0.85rem; color:{colors['success']}; margin-top:6px;">✓ Flash</div>
-    </div>
-    """, unsafe_allow_html=True)
+        if any(w in q for w in ['top', 'mayor', 'más alto']) and 'icv' not in q and 'imor' not in q:
+            if col_saldo_actual:
+                return df.nlargest(10, col_saldo_actual)
 
-with col3:
-    mensajes = len(st.session_state.get("messages", []))
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Mensajes</div>
-        <div class="metric-value">{mensajes}</div>
-        <div style="font-size:0.85rem; color:{colors['text_muted']}; margin-top:6px;">En esta sesión</div>
-    </div>
-    """, unsafe_allow_html=True)
+        if any(w in q for w in ['bajo', 'menor', 'peor']) and 'icv' not in q and 'imor' not in q:
+            if col_saldo_actual:
+                return df.nsmallest(10, col_saldo_actual)
 
-with col4:
-    tiene_contexto = bool(st.session_state.get("knowledge_context"))
-    contexto = "✓ Cargado" if tiene_contexto else "Sin datos"
-    color_contexto = colors['success'] if tiene_contexto else colors['warning']
-    
-    # Mostrar cantidad de registros si hay datos
-    if st.session_state.get('df') is not None:
-        num_registros = len(st.session_state['df'])
-        detalle = f"{num_registros:,} registros"
-    else:
-        detalle = "No disponible"
-    
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-label">Contexto de Datos</div>
-        <div class="metric-value" style="font-size:1.1rem;">{contexto}</div>
-        <div style="font-size:0.85rem; color:{color_contexto}; margin-top:6px;">{detalle}</div>
-    </div>
-    """, unsafe_allow_html=True)
+        if any(w in q for w in ['riesgo', 'vencido', 'deterioro', 'alto riesgo']):
+            # Priorizar filtrado por Nivel_Riesgo si existe
+            if 'Nivel_Riesgo' in df.columns and any(w in q for w in ['alto', 'crítico', 'peligro']):
+                return df[df['Nivel_Riesgo'] == 'Riesgo Alto'].head(15)
+            
+            # Calcular IMOR si no existe
+            if col_saldo_vencido and col_saldo_actual:
+                df2 = df.copy()
+                df2['IMOR'] = np.where(
+                    df2[col_saldo_actual] > 0,
+                    (df2[col_saldo_vencido] / df2[col_saldo_actual]) * 100,
+                    0
+                )
+                return df2.nlargest(15, 'IMOR')
+
+        return df
+
+    def generate_response(prompt, context):
+        full_prompt = f"""
+{ROLES_DEFINITIONS}
+
+CONTEXTO DE DATOS:
+{context}
+
+PREGUNTA: {prompt}
+
+Responde de manera clara y profesional.
+"""
+
+        try:
+            result = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=full_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.7,
+                    max_output_tokens=2048,
+                )
+            )
+            return result.text
+        except Exception as e:
+            return f"ERROR: {e}"
+
+    # ======================================================================
+    # CARGA DE DATOS
+    # ======================================================================
+    @st.cache_data
+    def load_excel_data(path='Base_Con_NA_Historico.csv'):
+        try:
+            df = None
+            if path.endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(path)
+            elif path.endswith('.csv'):
+                for enc in ['utf-8', 'latin-1', 'ISO-8859-1', 'cp1252']:
+                    try:
+                        df = pd.read_csv(path, encoding=enc)
+                        break
+                    except:
+                        pass
+                if df is None:
+                    raise ValueError("No encoding compatible")
+            else:
+                raise ValueError("Formato no soportado")
+            
+            # Enriquecer DataFrame con columnas calculadas
+            return enrich_dataframe(df)
+            
+        except Exception as e:
+            st.error(f"⚠️ {e}")
+            return None
+
+    # ======================================================================
+    # UI DIMEX
+    # ======================================================================
+    apply_css("assistant")
+
+    create_page_header(
+        f"{get_icon("icon_chatbot")}Asistente Inteligente DIMEX",
+        "Consulta especializada con selección automática de rol experto"
+    )
+
+    colors = get_theme_colors()
+
+    # ------------------- Cargar Datos -------------------
+    if "df" not in st.session_state:
+        st.session_state["df"] = None
+
+    with st.expander("Configuración de datos", expanded=False):
+        archivo = st.text_input("Archivo:", "Base_Con_NA_Historico.csv")
+        if st.button("Cargar archivo"):
+            with st.spinner("Cargando..."):
+                df_loaded = load_excel_data(archivo)
+                if df_loaded is not None:
+                    st.session_state["df"] = df_loaded
+                    st.success(f"✅ {len(df_loaded)} registros cargados")
+                    if HAS_RERUN:
+                        st.rerun()
+
+    st.markdown("---")
+
+    # ======================================================================
+    # CHAT
+    # ======================================================================
+
+    # (opcional) Si quieres forzar a limpiar el chat cuando cambias el layout
+    # puedes cambiar el número de versión
+    if "assistant_version" not in st.session_state:
+        st.session_state["assistant_version"] = 1
+
+    if "messages" not in st.session_state or not st.session_state["messages"]:
+        mensaje_bienvenida = f"""
+<div style="font-size:0.95rem;">
+    {get_icon("chatbot")}
+  <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.6rem;">
+    Hola, soy tu asistente inteligente DIMEX.
+  </div>
+
+  <p>Puedo ayudarte con:</p>
+  <ul style="list-style:none;padding-left:0;margin:0;">
+    <li style="display:flex;align-items:center;gap:0.35rem;">
+        <span>{get_icon("metricas_principales")} Riesgo</span>
+    </li>
+    <li style="display:flex;align-items:center;gap:0.35rem;">
+        <span>{get_icon("cobranza")} Cobranza</span>
+    </li>
+    <li style="display:flex;align-items:center;gap:0.35rem;">
+        <span>{get_icon("servicio")} Servicio</span>
+    </li>
+    <li style="display:flex;align-items:center;gap:0.35rem;">
+        <span>{get_icon("fraude")} Fraude</span>
+    </li>
+  </ul>
+
+  <p style="margin-top:0.8rem;">Solo escribe tu consulta.</p>
+</div>
+"""
+        st.session_state["messages"] = [
+            {"role": "assistant", "content": mensaje_bienvenida}
+        ]
+
+    # Mostrar historial de mensajes
+    for msg in st.session_state["messages"]:
+        with st.chat_message(msg["role"]):
+            if msg["role"] == "assistant":
+                st.markdown(msg["content"], unsafe_allow_html=True)
+            else:
+                st.markdown(msg["content"])
+
+    # Input de chat
+    if prompt := st.chat_input("Escribe tu consulta..."):
+
+        if st.session_state["df"] is None:
+            st.error("⚠️ Primero carga un archivo.")
+            st.stop()
+
+        # Mensaje del usuario
+        st.session_state["messages"].append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Respuesta del modelo
+        with st.spinner("🤖 Analizando y extrayendo datos relevantes..."):
+            df = st.session_state["df"]
+            
+            # DEBUG: Mostrar columnas disponibles
+            with st.expander("🔍 Debug: Columnas disponibles", expanded=False):
+                st.write("**Columnas en el DataFrame:**")
+                st.write(df.columns.tolist())
+                if 'ICV' in df.columns:
+                    st.success("✅ Columna ICV está presente")
+                    st.write(f"ICV promedio: {df['ICV'].mean():.2f}%")
+                else:
+                    st.warning("⚠️ Columna ICV no encontrada")
+            
+            df_filtered = detect_intent_and_filter(prompt, df)
+            
+            # DEBUG: Mostrar columnas después del filtro
+            with st.expander("🔍 Debug: Datos filtrados", expanded=False):
+                st.write("**Columnas después del filtro:**")
+                st.write(df_filtered.columns.tolist())
+                st.write(f"**Registros filtrados:** {len(df_filtered)}")
+                if 'ICV' in df_filtered.columns:
+                    st.success("✅ ICV presente en datos filtrados")
+                    st.dataframe(df_filtered[['Sucursal', 'ICV']].head(5))
+            
+            context = extract_relevant_data(df_filtered, prompt)
+            
+            # DEBUG: Mostrar contexto que se envía a Gemini
+            with st.expander("📤 Debug: Contexto enviado a Gemini", expanded=False):
+                st.text_area("Contexto:", context, height=300)
+            
+            response = generate_response(prompt, context)
+
+        with st.chat_message("assistant"):
+            st.markdown(response)
+
+        st.session_state["messages"].append({"role": "assistant", "content": response})
+
+    st.markdown("---")
+    st.caption(f" Mensajes: {len(st.session_state['messages'])} |  Rol automático activo")

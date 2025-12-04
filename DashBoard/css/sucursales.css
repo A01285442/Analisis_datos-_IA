@@ -1,0 +1,126 @@
+/* ============================================================
+   DIMEX - SUCURSALES CSS
+   Estilos específicos para el módulo de sucursales
+   ============================================================ */
+
+/* === PROGRESS COLUMNS EN TABLAS === */
+.stDataFrame [data-testid="stTable"] {
+    background-color: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 8px !important;
+}
+
+/* Progress bars dentro de las tablas */
+[data-testid="stTable"] [role="progressbar"] {
+    background-color: {accent} !important;
+}
+
+/* === GRÁFICOS DE BARRAS APILADAS === */
+.plotly-graph-div {
+    background-color: transparent !important;
+}
+
+/* === KPI CARDS ESPECÍFICOS === */
+.sucursal-card {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 12px !important;
+    padding: 1.2rem !important;
+    transition: all 0.3s ease;
+}
+
+.sucursal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+    border-color: {accent} !important;
+}
+
+/* === REGIÓN BADGES === */
+.region-badge {
+    display: inline-block;
+    background: {accent}30;
+    color: {accent};
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* === IMOR INDICATORS === */
+.imor-bajo {
+    color: {success} !important;
+    font-weight: 700;
+}
+
+.imor-medio {
+    color: {warning} !important;
+    font-weight: 700;
+}
+
+.imor-alto {
+    color: {error} !important;
+    font-weight: 700;
+}
+
+/* === TABLA DE SUCURSALES === */
+.sucursales-table {
+    background: {bg_card} !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.sucursales-table thead {
+    background: linear-gradient(135deg, {accent}20 0%, {accent_secondary}20 100%);
+}
+
+.sucursales-table tbody tr:hover {
+    background-color: {bg_secondary} !important;
+    cursor: pointer;
+}
+
+/* === SELECTBOX DE FILTROS === */
+.stSelectbox label {
+    font-weight: 600 !important;
+    color: {text_primary} !important;
+}
+
+/* === NÚMEROS GRANDES === */
+.big-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: {text_primary};
+    line-height: 1;
+}
+
+.big-number-label {
+    font-size: 0.9rem;
+    color: {text_muted};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.5rem;
+}
+
+/* === INDICADORES DE PERFORMANCE === */
+.performance-positive {
+    color: {success} !important;
+}
+
+.performance-positive::before {
+    content: "▲ ";
+}
+
+.performance-negative {
+    color: {error} !important;
+}
+
+.performance-negative::before {
+    content: "▼ ";
+}
+
+/* === GRÁFICO DE DISTRIBUCIÓN === */
+.distribution-chart {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+}

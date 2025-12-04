@@ -1,0 +1,36 @@
+/* ============================================================
+   DIMEX - STATISTICS CSS
+   Estilos específicos para el módulo de estadísticas
+   ============================================================ */
+
+/* === GRÁFICOS ESPECÍFICOS === */
+.plotly-graph-div {
+    background-color: {bg_card} !important;
+}
+
+/* === TABLAS DE RESULTADOS === */
+.results-table {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 8px !important;
+}
+
+/* === MATRICES DE CONFUSIÓN === */
+.confusion-matrix {
+    background: {bg_card} !important;
+    padding: 1rem !important;
+    border-radius: 10px !important;
+}
+
+/* === FEATURE IMPORTANCE === */
+.importance-chart {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+}
+
+/* === PROGRESS BARS === */
+.stProgress > div > div {
+    background-color: {accent} !important;
+}

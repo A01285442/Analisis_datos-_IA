@@ -1,0 +1,95 @@
+/* ============================================================
+   🔥 DASHBOARD FINANCIERO - ESTILOS ESPECÍFICOS
+   ============================================================ */
+
+/* === KPI INTERACTIVOS === */
+.kpi-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.kpi-interactive-card {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 12px !important;
+    padding: 1.2rem !important;
+    flex: 1;
+    min-width: 200px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-interactive-card:hover {
+    transform: translateY(-3px);
+    border-color: {accent} !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+}
+
+.kpi-interactive-card.active {
+    border: 2px solid {accent} !important;
+    background: linear-gradient(145deg, {bg_card} 0%, {bg_secondary} 100%) !important;
+}
+
+.kpi-title {
+    color: {text_muted} !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value-big {
+    color: {text_primary} !important;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-comparison {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Flechas de tendencia */
+.trend-up-good { color: {success} !important; }
+.trend-down-good { color: {success} !important; }
+.trend-up-bad { color: {error} !important; }
+.trend-down-bad { color: {error} !important; }
+
+/* === LEYENDA DEL GRÁFICO === */
+.chart-legend {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: {text_secondary};
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* === FILTROS === */
+.filter-container {
+    background-color: {bg_secondary} !important;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid {border};
+    margin-bottom: 2rem;
+}

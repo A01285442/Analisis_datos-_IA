@@ -1,0 +1,224 @@
+/* ============================================================
+   DIMEX - VENDEDORES CSS
+   Estilos específicos para el módulo de vendedores
+   ============================================================ */
+
+/* === TABLA DE VENDEDORES === */
+.vendedores-table {
+    background: {bg_card} !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.vendedores-table thead {
+    background: linear-gradient(135deg, {accent}30 0%, {accent_secondary}30 100%);
+    border-bottom: 2px solid {accent};
+}
+
+.vendedores-table tbody tr:hover {
+    background-color: {bg_secondary} !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* === PROGRESS COLUMNS (SALDO ACTUAL) === */
+[data-testid="stTable"] [role="progressbar"] {
+    background: linear-gradient(90deg, {accent} 0%, {accent_secondary} 100%) !important;
+    border-radius: 5px;
+    height: 8px !important;
+}
+
+[data-testid="stTable"] [role="progressbar"]::-webkit-progress-bar {
+    background-color: {bg_secondary} !important;
+    border-radius: 5px;
+}
+
+/* === TOP VENDEDOR HIGHLIGHT === */
+.top-vendedor {
+    background: linear-gradient(135deg, {accent}20 0%, {success}20 100%);
+    border-left: 4px solid {accent};
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.top-vendedor-badge {
+    background: {accent};
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 0.5rem;
+}
+
+/* === TENDENCIA INDICATORS === */
+.tendencia-positiva {
+    color: {success} !important;
+    font-weight: 700;
+}
+
+.tendencia-positiva::after {
+    content: " ↗";
+    font-size: 1.2em;
+}
+
+.tendencia-negativa {
+    color: {error} !important;
+    font-weight: 700;
+}
+
+.tendencia-negativa::after {
+    content: " ↘";
+    font-size: 1.2em;
+}
+
+.tendencia-neutral {
+    color: {text_muted} !important;
+    font-weight: 500;
+}
+
+.tendencia-neutral::after {
+    content: " →";
+    font-size: 1.2em;
+}
+
+/* === VENDEDOR CARDS === */
+.vendedor-card {
+    background: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    transition: all 0.3s ease;
+}
+
+.vendedor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+    border-color: {accent} !important;
+}
+
+.vendedor-nombre {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: {text_primary};
+    margin-bottom: 0.5rem;
+}
+
+.vendedor-sucursal {
+    font-size: 0.85rem;
+    color: {text_muted};
+    margin-bottom: 0.8rem;
+}
+
+.vendedor-saldo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: {accent};
+}
+
+/* === PROMEDIO HISTÓRICO === */
+.promedio-historico {
+    background: {bg_secondary};
+    border-left: 3px solid {text_muted};
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+/* === VARIACIÓN PERCENTAGE === */
+.variacion-card {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.variacion-positiva {
+    background: {success}20;
+    color: {success};
+}
+
+.variacion-negativa {
+    background: {error}20;
+    color: {error};
+}
+
+/* === FILTROS Y BÚSQUEDA === */
+.search-vendedor {
+    background: {bg_secondary} !important;
+    border: 2px solid {border} !important;
+    border-radius: 8px !important;
+    padding: 0.8rem !important;
+    color: {text_primary} !important;
+}
+
+.search-vendedor:focus {
+    border-color: {accent} !important;
+    box-shadow: 0 0 0 3px {accent}20 !important;
+}
+
+/* === ESTADÍSTICAS RÁPIDAS === */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    background: {bg_card};
+    border: 1px solid {border};
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: {accent};
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: {text_muted};
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+/* === RANKING BADGES === */
+.ranking-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.ranking-1 {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.ranking-2 {
+    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+    color: white;
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
+}
+
+.ranking-3 {
+    background: linear-gradient(135deg, #CD7F32, #B8733C);
+    color: white;
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+}
+
+.ranking-other {
+    background: {bg_secondary};
+    color: {text_muted};
+}

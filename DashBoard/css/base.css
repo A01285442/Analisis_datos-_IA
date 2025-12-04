@@ -1,0 +1,136 @@
+
+/* === BACKGROUND PRINCIPAL === */
+[data-testid="stAppViewContainer"] {
+    background-color: {bg_primary} !important;
+}
+
+.main, .block-container {
+    background-color: {bg_primary} !important;
+    color: {text_primary} !important;
+}
+
+/* === TIPOGRAFÍA === */
+h1, h2, h3, h4, h5, h6, label, p, span {
+    color: {text_primary} !important;
+}
+
+/* === SIDEBAR === */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, {accent} 0%, {accent_secondary} 100%) !important;
+}
+
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
+    color: white !important;
+}
+
+/* Protección para tarjetas dentro del sidebar */
+.dimex-sidebar-card * {
+    color: {text_primary} !important;
+}
+
+/* === TITLES === */
+.section-title {
+    color: {text_primary} !important;
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    padding: 10px 0;
+    border-bottom: 3px solid {accent};
+    margin-bottom: 1.5rem;
+}
+
+.subsection-title {
+    color: {text_secondary} !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+}
+
+/* === CARDS === */
+.metric-card {
+    background: {bg_card} !important;
+    color: {text_primary} !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+    border-left: 5px solid {accent} !important;
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.metric-label {
+    color: {text_muted} !important;
+    font-size: 0.85rem !important;
+}
+
+.metric-value {
+    color: {text_primary} !important;
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+}
+
+/* === ALERTS === */
+.alert-box {
+    background-color: {bg_card} !important;
+    border: 1px solid {border} !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+    color: {text_primary} !important;
+}
+
+.alert-info { border-left: 5px solid #4299e1 !important; }
+.alert-success { border-left: 5px solid {success} !important; }
+.alert-warning { border-left: 5px solid {warning} !important; }
+.alert-error { border-left: 5px solid {error} !important; }
+
+/* === TABLES === */
+thead tr th {
+    background-color: {bg_secondary} !important;
+    color: {text_primary} !important;
+}
+
+tbody tr {
+    background-color: {bg_card} !important;
+    color: {text_primary} !important;
+}
+
+/* === INPUTS === */
+.stSelectbox div,
+.stTextInput input,
+.stNumberInput input {
+    background-color: {bg_secondary} !important;
+    color: {text_primary} !important;
+    border: 1px solid {border} !important;
+}
+
+/* === BUTTONS === */
+.stButton > button,
+.stDownloadButton > button {
+    background: linear-gradient(135deg, {accent} 0%, {accent_secondary} 100%) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s !important;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 171, 50, 0.4) !important;
+}
+
+/* === FILE UPLOADER === */
+.stFileUploader {
+    background-color: {bg_card} !important;
+    border: 1px dashed {border} !important;
+    border-radius: 8px !important;
+}
+
+.stFileUploader label {
+    color: {text_primary} !important;
+}
