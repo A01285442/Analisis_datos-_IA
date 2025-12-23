@@ -388,11 +388,11 @@ Responde de manera clara y profesional.
 
         try:
             result = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
-                    max_output_tokens=6000,
+                    max_output_tokens=2048,
                 )
             )
             return result.text
