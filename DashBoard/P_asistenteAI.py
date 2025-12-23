@@ -208,7 +208,7 @@ INSTRUCCIONES:
     # Palabra completa: evita coincidencias dentro de otras palabras
         return re.search(rf"\b{re.escape(keyword)}\b", text) is not None
 
-    def extract_relevant_data(df, query, max_rows=20):
+    def extract_relevant_data(df, query, max_rows=10):
         if df is None or df.empty:
             return "No hay datos disponibles."
 
