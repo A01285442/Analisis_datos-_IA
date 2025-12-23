@@ -231,7 +231,6 @@ INSTRUCCIONES:
             'icv': ['ICV', 'ICV_Calc', 'SaldoInsolutoVencidoActual', 'SaldoInsolutoActual', 'ICV_Crecimiento_6M', 'ICV_T06'],
             '3089': ['3089', 'Saldo30-89', 'Ratio_30_89_Calc'],
             'riesgo': ['Nivel_Riesgo'],
-            'cluster': ['Nivel_Riesgo'],
             'crecimiento': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
             'tendencia': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
             'evolución': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
