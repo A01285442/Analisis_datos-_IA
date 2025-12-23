@@ -268,7 +268,7 @@ INSTRUCCIONES:
         except Exception as e:
             # Si falla, incluir todas las columnas
             st.warning(f"Error al filtrar columnas: {e}. Usando todas las columnas.")
-            df_filtered = df.copy()
+            df_filtered = df[relevant_cols].copy()
 
         # Ordenar por la métrica relevante si existe
         if 'ICV' in df_filtered.columns and any(w in query_lower for w in ['icv', 'imor']):
