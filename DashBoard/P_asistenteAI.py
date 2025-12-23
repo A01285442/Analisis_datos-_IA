@@ -245,7 +245,7 @@ INSTRUCCIONES:
         relevant_cols = list(relevant_cols)
 
         # SIEMPRE incluir columnas de identificación
-        id_cols = ['Sucursal', 'Vendedor', 'Región', 'Region', 'Nivel_Riesgo']
+        id_cols = ['Sucursal', 'Región', 'Region', 'Nivel_Riesgo']
         relevant_cols += [c for c in id_cols if c in df.columns and c not in relevant_cols]
 
         # Para consultas de ICV/IMOR, FORZAR inclusión de TODAS las columnas necesarias
@@ -260,7 +260,7 @@ INSTRUCCIONES:
 
         # Si no hay columnas relevantes, usar las importantes
         if not relevant_cols:
-            important = ['Sucursal', 'Saldo Insoluto Actual', 'SaldoInsolutoActual', 'Saldo_Actual', 'Vendedor', 'Nivel_Riesgo']
+            important = ['Sucursal', 'SaldoInsolutoActual', 'Saldo_Actual', 'Nivel_Riesgo']
             relevant_cols = [c for c in important if c in df.columns]
 
         try:
@@ -392,7 +392,7 @@ Responde de manera clara y profesional.
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
-                    max_output_tokens=2048,
+                    max_output_tokens=6000,
                 )
             )
             return result.text
