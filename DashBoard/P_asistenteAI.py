@@ -231,6 +231,7 @@ INSTRUCCIONES:
             'icv': ['ICV', 'ICV_Calc', 'SaldoInsolutoVencidoActual', 'SaldoInsolutoActual', 'ICV_Crecimiento_6M', 'ICV_T06'],
             '3089': ['3089', 'Saldo30-89', 'Ratio_30_89_Calc'],
             'riesgo': ['Nivel_Riesgo'],
+            'cluster': ['Nivel_Riesgo'],
             'crecimiento': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
             'tendencia': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
             'evolución': ['ICV_Crecimiento_6M', 'ICV', 'ICV_T06'],
@@ -387,7 +388,7 @@ Responde de manera clara y profesional.
 
         try:
             result = client.models.generate_content(
-                model='gemini-2.0-flash-lite',
+                model='gemini-2.0-flash',
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
