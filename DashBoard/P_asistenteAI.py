@@ -387,7 +387,7 @@ Responde de manera clara y profesional.
 
         try:
             result = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.0-flash-lite',
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
                     temperature=0.7,
